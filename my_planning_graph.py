@@ -209,7 +209,7 @@ class PlanningGraph:
 
         print("The goals are ", self.goal)
         level = 0
-        while True:
+        while not self._is_leveled:
             layer = self.literal_layers[-1]
 
             # ######### debug in this section ##############
@@ -231,6 +231,7 @@ class PlanningGraph:
 
             self._extend()
             level += 1
+        return -1
 
     def h_setlevel_v2(self):
         """ Calculate the set level heuristic for the planning graph
