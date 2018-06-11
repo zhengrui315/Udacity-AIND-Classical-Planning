@@ -36,7 +36,7 @@ class ActionLayer(BaseActionLayer):
                 or any([~e in actionB.preconditions for e in actionA.effects])
 
     def _competing_needs(self, actionA, actionB):
-        """ Return True if the preconditions of the actions are all pairwise mutex in the parent layer 
+        """ Return True if any of the preconditions of the two actions are pairwise mutex in the parent layer
         
         See Also
         --------
@@ -45,8 +45,8 @@ class ActionLayer(BaseActionLayer):
         """
         # TODO: implement this function
         # raise NotImplementedError
-        return all(self.parent_layer.is_mutex(itemA,itemB) for itemA in actionA.preconditions for itemB in actionB.preconditions) \
-                and all(self.parent_layer.is_mutex(itemB, itemA) for itemA in actionA.preconditions for itemB in actionB.preconditions)
+        return any(self.parent_layer.is_mutex(itemA,itemB) for itemA in actionA.preconditions for itemB in actionB.preconditions) \
+                or any(self.parent_layer.is_mutex(itemB, itemA) for itemA in actionA.preconditions for itemB in actionB.preconditions)
 
 
 class LiteralLayer(BaseLiteralLayer):
@@ -192,7 +192,6 @@ class PlanningGraph:
         """
         # TODO: implement setlevel heuristic
         # raise NotImplementedError
-        print("\n********** Testing Version One, h_setlevel")
         def AllGoalSeen(layer):
             for g in self.goal:
                 if g not in layer:
@@ -207,7 +206,7 @@ class PlanningGraph:
                     return False
             return True
 
-        print("The goals are ", self.goal)
+        # print("The goals are ", self.goal)
         level = 0
         while not self._is_leveled:
             layer = self.literal_layers[-1]
@@ -232,86 +231,6 @@ class PlanningGraph:
             self._extend()
             level += 1
         return -1
-
-    def h_setlevel_v2(self):
-        """ Calculate the set level heuristic for the planning graph
-
-        The set level of a planning graph is the first level where all goals
-        appear such that no pair of goal literals are mutex in the last
-        layer of the planning graph.
-
-        Hint: expand the graph one level at a time until you find the set level
-
-        See Also
-        --------
-        Russell-Norvig 10.3.1 (3rd Edition)
-
-        Notes
-        -----
-        WARNING: you should expect long runtimes using this heuristic on complex problems
-        """
-        # TODO: implement setlevel heuristic
-        # raise NotImplementedError
-
-        print("\n********** Testing Version Two, h_setlevel")
-        def AllGoalSeen(layer):
-            for g in self.goal:
-                if g not in layer:
-                    return False
-            return True
-
-        def NoMutex(layer):
-            if not AllGoalSeen(layer):
-                return False
-            for g1,g2 in combinations(self.goal,2):
-                if layer.is_mutex(g1,g2):
-                    return False
-            return True
-
-        self._extend()
-        level = 1
-        while True:
-            if AllGoalSeen(self.literal_layers[-1]) and NoMutex(self.literal_layers[-2]):
-                return level
-
-            self._extend()
-            level += 1
-
-        # for idx,layer in enumerate(self.literal_layers):
-        #     # invalid = False  # this layer is not valid, either some goal is not found, or some mutex pair is found
-        #     # for g1,g2 in combinations(self.goal,2):
-        #     #     if g1 not in layer or g2 not in layer or layer.is_mutex(g1,g2):
-        #     #         invalid = True
-        #     #         break
-        #     # # if a mutex pair is not found
-        #     # if not invalid:
-        #     #     return idx
-        #
-        #
-        #     ####  here is for debugging  ####
-        #     print("beginning debuging session here *********")
-        #     print("idx = ",idx)
-        #
-        #     # check whether all goals appear in the current layer
-        #     invalid = False
-        #     for g in self.goal:
-        #         if g not in layer:
-        #             invalid = True
-        #             break
-        #     if invalid:
-        #         continue
-        #     print(" all goals seen")
-        #     # check whether there is mutex pair in this layer
-        #     for g1,g2 in combinations(self.goal,2):
-        #         if layer.is_mutex(g1,g2):
-        #             invalid = True
-        #             break
-        #     # if mutex pair is not found
-        #     if not invalid:
-        #         print("*************** Found a solution, idx =",idx)
-        #         return idx
-
-
 
 
 
